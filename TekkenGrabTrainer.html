@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timing Game with Score</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: black;
+            flex-direction: column;
+        }
+
+        #gameContainer {
+            position: relative;
+            text-align: center;
+        }
+
+        video {
+            width: 960px;
+            height: 540px;
+            display: block;
+        }
+
+        #scoreboard {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 24px;
+            color: white;
+        }
+
+        #failMessage, #successMessage {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 28px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px black;
+            display: none;
+        }
+
+        #failMessage { color: red; }
+        #successMessage { color: green; }
+    </style>
+</head>
+<body>
+
+    <div id="gameContainer">
+        <div id="scoreboard">High Score: <span id="highScore">0</span></div>
+        <video id="gameVideo" controls autoplay loop>
+            <source id="videoSource" src="file:///C:/Users/gamen/OneDrive/Desktop/TekkenGrabs/Grab_1_MISSEDDEFAULT.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div id="failMessage">You Failed! Try again.</div>
+        <div id="successMessage">Correct! Well done! +<span id="scorePoints"></span></div>
+    </div>
+
+    <script>
+        const video = document.getElementById('gameVideo');
+        const videoSource = document.getElementById('videoSource');
+        const failMessage = document.getElementById('failMessage');
+        const successMessage = document.getElementById('successMessage');
+        const scorePoints = document.getElementById('scorePoints');
+        const highScoreDisplay = document.getElementById('highScore');
+
+        let highScore = 0;
+
+        const defaultVideo = "file:///C:/Users/gamen/OneDrive/Desktop/TekkenGrabs/Grab_1_MISSEDDEFAULT.mp4";
+        const missedVideo = "file:///C:/Users/gamen/OneDrive/Desktop/TekkenGrabs/Grab_1_WRONG.mp4";
+        const correctVideo = "file:///C:/Users/gamen/OneDrive/Desktop/TekkenGrabs/Grab_1_SUCCESS.mp4";
+
+        const showStartTime = 0.12;
+        const pressTimeLimit = 0.333;
+        const showEndTime = showStartTime + pressTimeLimit;
+
+        let isFailing = false;
+        let isCorrectPressed = false;
+        let gamepadIndex = null;
+
+        function resetToDefaultVideo() {
+            videoSource.src = defaultVideo;
+            video.load();
+            video.play();
+            video.loop = true;
+            isFailing = false;
+            isCorrectPressed = false;
+            failMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        function calculateScore(pressTime) {
+            let timeDiff = pressTime - showStartTime;
+            let score = 0;
+
+            if (timeDiff <= 0.1) {
+                score = 888;
+            } else if (timeDiff <= 0.2) {
+                score = 400;
+            } else if (timeDiff <= 0.333) {
+                score = 300;
+            }
+            
+            highScore += score;
+            highScoreDisplay.innerText = highScore;
+            return score;
+        }
+
+        function playMissedVideo() {
+            videoSource.src = missedVideo;
+            video.load();
+            video.play();
+            video.loop = false;
+            isFailing = true;
+            failMessage.style.display = 'block';
+        }
+
+        function playCorrectVideo(pressTime) {
+            let score = calculateScore(pressTime);
+            scorePoints.innerText = score;
+            videoSource.src = correctVideo;
+            video.load();
+            video.play();
+            video.loop = false;
+            isCorrectPressed = true;
+            successMessage.style.display = 'block';
+        }
+
+        video.addEventListener('ended', resetToDefaultVideo);
+
+        document.addEventListener('keydown', (event) => {
+            if (video.currentTime >= showStartTime && video.currentTime <= showEndTime) {
+                if (event.key === '1' && !isCorrectPressed) {
+                    playCorrectVideo(video.currentTime);
+                } else if (event.key !== '1' && !isFailing) {
+                    playMissedVideo();
+                }
+            }
+        });
+
+        function updateGamepadStatus() {
+            const gamepads = navigator.getGamepads();
+            if (gamepads) {
+                const gamepad = gamepads[gamepadIndex];
+
+                if (gamepad) {
+                    let xPressed = gamepad.buttons[2].pressed;
+                    let yPressed = gamepad.buttons[3].pressed;
+                    let aPressed = gamepad.buttons[0].pressed;
+                    let bPressed = gamepad.buttons[1].pressed;
+                    let isInTimeWindow = video.currentTime >= showStartTime && video.currentTime <= showEndTime;
+
+                    if (xPressed && yPressed && isInTimeWindow && !isFailing) {
+                        playMissedVideo();
+                    } else if (xPressed && !yPressed && !aPressed && !bPressed && isInTimeWindow && !isCorrectPressed) {
+                        playCorrectVideo(video.currentTime);
+                    } else if ((aPressed || bPressed || yPressed) && isInTimeWindow && !isFailing) {
+                        playMissedVideo();
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('gamepadconnected', (e) => {
+            gamepadIndex = e.gamepad.index;
+        });
+
+        setInterval(updateGamepadStatus, 100);
+    </script>
+
+</body>
+</html>
