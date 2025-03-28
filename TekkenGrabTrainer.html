@@ -53,17 +53,9 @@
 
     <div id="gameContainer">
         <div id="scoreboard">High Score: <span id="highScore">0</span></div>
-        <!-- Default video, this one stays visible -->
         <video id="gameVideo" controls autoplay loop>
             <source id="videoSource" src="https://juggernauttekken.github.io/TEKKENGrabTrainer/videos/Grab_1_MISSEDDEFAULT.mp4" type="video/mp4">
             Your browser does not support the video tag.
-        </video>
-        <!-- Hidden videos for preload -->
-        <video id="missedVideo" style="visibility: hidden;">
-            <source src="https://juggernauttekken.github.io/TEKKENGrabTrainer/videos/Grab_1_WRONG.mp4" type="video/mp4">
-        </video>
-        <video id="correctVideo" style="visibility: hidden;">
-            <source src="https://juggernauttekken.github.io/TEKKENGrabTrainer/videos/main/videos/Grab_1_SUCCESS.mp4" type="video/mp4">
         </video>
         <div id="failMessage">You Failed! Try again.</div>
         <div id="successMessage">Correct! Well done! +<span id="scorePoints"></span></div>
@@ -91,13 +83,6 @@
         let isCorrectPressed = false;
         let gamepadIndex = null;
 
-        // Hide all videos except the default one
-        function hideAllVideos() {
-            const videos = document.querySelectorAll('video:not(#gameVideo)');
-            videos.forEach(video => video.style.visibility = 'hidden');
-        }
-
-        // Reset to the default video
         function resetToDefaultVideo() {
             videoSource.src = defaultVideo;
             video.load();
@@ -109,7 +94,6 @@
             successMessage.style.display = 'none';
         }
 
-        // Calculate score based on press time
         function calculateScore(pressTime) {
             let timeDiff = pressTime - showStartTime;
             let score = 0;
@@ -121,7 +105,7 @@
             } else if (timeDiff <= 0.333) {
                 score = 300;
             }
-
+            
             highScore += score;
             highScoreDisplay.innerText = highScore;
             return score;
@@ -147,25 +131,8 @@
             successMessage.style.display = 'block';
         }
 
-        // Wait until all videos are fully loaded before hiding them and starting the game
-        function preloadVideos() {
-            const videos = document.querySelectorAll('video');
-            let loadedCount = 0;
-
-            videos.forEach((videoElement) => {
-                videoElement.onloadeddata = function() {
-                    loadedCount++;
-                    if (loadedCount === videos.length) {
-                        hideAllVideos(); // Hide all videos once loaded
-                        resetToDefaultVideo(); // Start with the default video
-                    }
-                };
-            });
-        }
-
         video.addEventListener('ended', resetToDefaultVideo);
 
-        // Listen for keydown to detect user inputs
         document.addEventListener('keydown', (event) => {
             if (video.currentTime >= showStartTime && video.currentTime <= showEndTime) {
                 if (event.key === '1' && !isCorrectPressed) {
@@ -204,10 +171,6 @@
         });
 
         setInterval(updateGamepadStatus, 100);
-
-        // Preload videos when the page loads
-        window.onload = preloadVideos;
-
     </script>
 
 </body>
