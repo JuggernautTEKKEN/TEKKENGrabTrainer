@@ -113,7 +113,7 @@
 
         function playMissedVideo() {
             videoSource.src = missedVideo;
-            video.load();
+            video.load();  // Ensure the video is loaded again
             video.play();
             video.loop = false;
             isFailing = true;
@@ -124,7 +124,7 @@
             let score = calculateScore(pressTime);
             scorePoints.innerText = score;
             videoSource.src = correctVideo;
-            video.load();
+            video.load();  // Ensure the video is loaded again
             video.play();
             video.loop = false;
             isCorrectPressed = true;
