@@ -23,7 +23,7 @@
         video {
             width: 960px;
             height: 540px;
-            visibility: hidden; /* Hide videos but allow them to load */
+            visibility: hidden; /* Hide videos initially */
         }
 
         #scoreboard {
@@ -54,15 +54,15 @@
     <div id="gameContainer">
         <div id="scoreboard">High Score: <span id="highScore">0</span></div>
         <!-- Preloading all videos -->
-        <video id="defaultVideo" autoplay loop>
+        <video id="defaultVideo">
             <source src="https://juggernauttekken.github.io/TEKKENGrabTrainer/videos/Grab_1_MISSEDDEFAULT.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
-        <video id="missedVideo" autoplay loop>
+        <video id="missedVideo">
             <source src="https://juggernauttekken.github.io/TEKKENGrabTrainer/videos/Grab_1_WRONG.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
-        <video id="correctVideo" autoplay loop>
+        <video id="correctVideo">
             <source src="https://juggernauttekken.github.io/TEKKENGrabTrainer/videos/main/videos/Grab_1_SUCCESS.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -140,6 +140,11 @@
             isCorrectPressed = true;
             successMessage.style.display = 'block';
         }
+
+        // Start the game by showing the default video
+        window.onload = function() {
+            resetToDefaultVideo();
+        };
 
         defaultVideo.addEventListener('ended', resetToDefaultVideo);
         missedVideo.addEventListener('ended', resetToDefaultVideo);
