@@ -23,7 +23,7 @@
         video {
             width: 960px;
             height: 540px;
-            display: none; /* Hide videos initially */
+            visibility: hidden; /* Hide videos but allow them to load */
         }
 
         #scoreboard {
@@ -90,15 +90,15 @@
 
         // Hide all videos initially
         function hideAllVideos() {
-            defaultVideo.style.display = 'none';
-            missedVideo.style.display = 'none';
-            correctVideo.style.display = 'none';
+            defaultVideo.style.visibility = 'hidden';
+            missedVideo.style.visibility = 'hidden';
+            correctVideo.style.visibility = 'hidden';
         }
 
         // Reset to the default video
         function resetToDefaultVideo() {
             hideAllVideos();
-            defaultVideo.style.display = 'block';
+            defaultVideo.style.visibility = 'visible';
             defaultVideo.play();
             isFailing = false;
             isCorrectPressed = false;
@@ -125,7 +125,7 @@
 
         function playMissedVideo() {
             hideAllVideos();
-            missedVideo.style.display = 'block';
+            missedVideo.style.visibility = 'visible';
             missedVideo.play();
             isFailing = true;
             failMessage.style.display = 'block';
@@ -135,7 +135,7 @@
             let score = calculateScore(pressTime);
             scorePoints.innerText = score;
             hideAllVideos();
-            correctVideo.style.display = 'block';
+            correctVideo.style.visibility = 'visible';
             correctVideo.play();
             isCorrectPressed = true;
             successMessage.style.display = 'block';
