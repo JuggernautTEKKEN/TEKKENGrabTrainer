@@ -23,7 +23,7 @@
         video {
             width: 960px;
             height: 540px;
-            display: block;
+            display: none; /* Hide videos initially */
         }
 
         #scoreboard {
@@ -53,8 +53,17 @@
 
     <div id="gameContainer">
         <div id="scoreboard">High Score: <span id="highScore">0</span></div>
-        <video id="gameVideo" controls autoplay loop>
-            <source id="videoSource" src="https://juggernauttekken.github.io/TEKKENGrabTrainer/videos/Grab_1_MISSEDDEFAULT.mp4" type="video/mp4">
+        <!-- Preloading all videos -->
+        <video id="defaultVideo" autoplay loop>
+            <source src="https://juggernauttekken.github.io/TEKKENGrabTrainer/videos/Grab_1_MISSEDDEFAULT.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <video id="missedVideo" autoplay loop>
+            <source src="https://juggernauttekken.github.io/TEKKENGrabTrainer/videos/Grab_1_WRONG.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <video id="correctVideo" autoplay loop>
+            <source src="https://juggernauttekken.github.io/TEKKENGrabTrainer/videos/main/videos/Grab_1_SUCCESS.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
         <div id="failMessage">You Failed! Try again.</div>
@@ -62,8 +71,9 @@
     </div>
 
     <script>
-        const video = document.getElementById('gameVideo');
-        const videoSource = document.getElementById('videoSource');
+        const defaultVideo = document.getElementById('defaultVideo');
+        const missedVideo = document.getElementById('missedVideo');
+        const correctVideo = document.getElementById('correctVideo');
         const failMessage = document.getElementById('failMessage');
         const successMessage = document.getElementById('successMessage');
         const scorePoints = document.getElementById('scorePoints');
@@ -71,23 +81,25 @@
 
         let highScore = 0;
 
-        const defaultVideo = "https://juggernauttekken.github.io/TEKKENGrabTrainer/videos/Grab_1_MISSEDDEFAULT.mp4";
-        const missedVideo = "https://juggernauttekken.github.io/TEKKENGrabTrainer/videos/Grab_1_WRONG.mp4";
-        const correctVideo = "https://juggernauttekken.github.io/TEKKENGrabTrainer/videos/main/videos/Grab_1_SUCCESS.mp4";
-
         const showStartTime = 0.12;
         const pressTimeLimit = 0.333;
         const showEndTime = showStartTime + pressTimeLimit;
 
         let isFailing = false;
         let isCorrectPressed = false;
-        let gamepadIndex = null;
 
+        // Hide all videos initially
+        function hideAllVideos() {
+            defaultVideo.style.display = 'none';
+            missedVideo.style.display = 'none';
+            correctVideo.style.display = 'none';
+        }
+
+        // Reset to the default video
         function resetToDefaultVideo() {
-            videoSource.src = defaultVideo;
-            video.load();
-            video.play();
-            video.loop = true;
+            hideAllVideos();
+            defaultVideo.style.display = 'block';
+            defaultVideo.play();
             isFailing = false;
             isCorrectPressed = false;
             failMessage.style.display = 'none';
@@ -105,17 +117,16 @@
             } else if (timeDiff <= 0.333) {
                 score = 300;
             }
-            
+
             highScore += score;
             highScoreDisplay.innerText = highScore;
             return score;
         }
 
         function playMissedVideo() {
-            videoSource.src = missedVideo;
-            video.load();  // Ensure the video is loaded again
-            video.play();
-            video.loop = false;
+            hideAllVideos();
+            missedVideo.style.display = 'block';
+            missedVideo.play();
             isFailing = true;
             failMessage.style.display = 'block';
         }
@@ -123,54 +134,27 @@
         function playCorrectVideo(pressTime) {
             let score = calculateScore(pressTime);
             scorePoints.innerText = score;
-            videoSource.src = correctVideo;
-            video.load();  // Ensure the video is loaded again
-            video.play();
-            video.loop = false;
+            hideAllVideos();
+            correctVideo.style.display = 'block';
+            correctVideo.play();
             isCorrectPressed = true;
             successMessage.style.display = 'block';
         }
 
-        video.addEventListener('ended', resetToDefaultVideo);
+        defaultVideo.addEventListener('ended', resetToDefaultVideo);
+        missedVideo.addEventListener('ended', resetToDefaultVideo);
+        correctVideo.addEventListener('ended', resetToDefaultVideo);
 
         document.addEventListener('keydown', (event) => {
-            if (video.currentTime >= showStartTime && video.currentTime <= showEndTime) {
+            if (defaultVideo.currentTime >= showStartTime && defaultVideo.currentTime <= showEndTime) {
                 if (event.key === '1' && !isCorrectPressed) {
-                    playCorrectVideo(video.currentTime);
+                    playCorrectVideo(defaultVideo.currentTime);
                 } else if (event.key !== '1' && !isFailing) {
                     playMissedVideo();
                 }
             }
         });
 
-        function updateGamepadStatus() {
-            const gamepads = navigator.getGamepads();
-            if (gamepads) {
-                const gamepad = gamepads[gamepadIndex];
-
-                if (gamepad) {
-                    let xPressed = gamepad.buttons[2].pressed;
-                    let yPressed = gamepad.buttons[3].pressed;
-                    let aPressed = gamepad.buttons[0].pressed;
-                    let bPressed = gamepad.buttons[1].pressed;
-                    let isInTimeWindow = video.currentTime >= showStartTime && video.currentTime <= showEndTime;
-
-                    if (xPressed && yPressed && isInTimeWindow && !isFailing) {
-                        playMissedVideo();
-                    } else if (xPressed && !yPressed && !aPressed && !bPressed && isInTimeWindow && !isCorrectPressed) {
-                        playCorrectVideo(video.currentTime);
-                    } else if ((aPressed || bPressed || yPressed) && isInTimeWindow && !isFailing) {
-                        playMissedVideo();
-                    }
-                }
-            }
-        }
-
-        window.addEventListener('gamepadconnected', (e) => {
-            gamepadIndex = e.gamepad.index;
-        });
-
-        setInterval(updateGamepadStatus, 100);
     </script>
 
 </body>
