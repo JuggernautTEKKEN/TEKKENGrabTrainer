@@ -53,6 +53,7 @@
 
     <div id="gameContainer">
         <div id="scoreboard">High Score: <span id="highScore">0</span></div>
+        <!-- Default video, this one stays visible -->
         <video id="gameVideo" controls autoplay loop>
             <source id="videoSource" src="https://juggernauttekken.github.io/TEKKENGrabTrainer/videos/Grab_1_MISSEDDEFAULT.mp4" type="video/mp4">
             Your browser does not support the video tag.
@@ -92,7 +93,7 @@
 
         // Hide all videos except the default one
         function hideAllVideos() {
-            const videos = document.querySelectorAll('video');
+            const videos = document.querySelectorAll('video:not(#gameVideo)');
             videos.forEach(video => video.style.visibility = 'hidden');
         }
 
